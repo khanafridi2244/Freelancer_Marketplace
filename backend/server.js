@@ -1,9 +1,10 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import connectDB from './config/db.js';
 
 connectDB();
 
@@ -13,9 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+// routes import
+import userRouter from './routes/user.routes.js';
+
+// routes declaration
+app.use('/api/v1/users', userRouter);
 
 const PORT = process.env.PORT || 5000;
 
