@@ -27,4 +27,85 @@ const createTask = async (req, res) => {
   }
 };
 
-export { createTask };
+const getTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find().populate('client', 'name email');
+    return res.status(200).json(tasks);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const getTaskById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id).populate('client', 'name email');
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    return res.status(200).json(task);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    if (task.client.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this task' });
+    }
+
+    const { title, description, budget, deadline, category } = req.body;
+
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (budget !== undefined) task.budget = budget;
+    if (deadline !== undefined) task.deadline = deadline;
+    if (category !== undefined) task.category = category;
+
+    const updatedTask = await task.save();
+
+    return res.status(200).json(updatedTask);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    if (task.client.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this task' });
+    }
+
+    await task.deleteOne();
+
+    return res.status(200).json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export { 
+  createTask, 
+  getTasks, 
+  getTaskById, 
+  updateTask, 
+  deleteTask 
+
+};
