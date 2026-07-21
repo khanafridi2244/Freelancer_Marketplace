@@ -18,11 +18,13 @@ app.use(cookieParser());
 import userRouter from './routes/user.routes.js';
 import taskRouter from './routes/task.routes.js';
 import bidActionRouter from './routes/bidAction.routes.js';
+import userReviewRouter from './routes/userReview.routes.js';
 
 // routes declaration
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/bids', bidActionRouter);
+app.use('/api/v1/users', userReviewRouter);
 
 const PORT = process.env.PORT || 5000;
 
