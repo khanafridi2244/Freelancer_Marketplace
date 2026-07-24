@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTaskById } from '../api/tasks.js';
+import { createBid, getBidsForTask, acceptBid } from '../api/bids.js';
+import { useAuth } from '../context/useAuth.js';
 
 const statusColors = {
   open: 'bg-green-500/20 text-green-400',
@@ -9,25 +11,90 @@ const statusColors = {
   cancelled: 'bg-red-500/20 text-red-400',
 };
 
+const bidStatusColors = {
+  pending: 'bg-yellow-500/20 text-yellow-400',
+  accepted: 'bg-green-500/20 text-green-400',
+  rejected: 'bg-red-500/20 text-red-400',
+};
+
 function TaskDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
+
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [proposedAmount, setProposedAmount] = useState('');
+  const [message, setMessage] = useState('');
+  const [bidError, setBidError] = useState('');
+  const [bidSuccess, setBidSuccess] = useState(false);
+
+  const [bids, setBids] = useState([]);
+  const [bidsLoading, setBidsLoading] = useState(true);
+
+  const fetchTask = useCallback(async () => {
+    try {
+      const response = await getTaskById(id);
+      setTask(response.data);
+    } catch (err) {
+      console.error('Failed to fetch task:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
-    const fetchTask = async () => {
+    fetchTask();
+  }, [fetchTask]);
+
+  const isOwningClient =
+    user && task && user.role === 'client' && task.client?._id === user.id;
+
+  useEffect(() => {
+    if (!isOwningClient) {
+      setBidsLoading(false);
+      return;
+    }
+
+    const fetchBids = async () => {
+      setBidsLoading(true);
       try {
-        const response = await getTaskById(id);
-        setTask(response.data);
+        const response = await getBidsForTask(id);
+        setBids(response.data);
       } catch (err) {
-        console.error('Failed to fetch task:', err);
+        console.error('Failed to fetch bids:', err);
       } finally {
-        setLoading(false);
+        setBidsLoading(false);
       }
     };
 
-    fetchTask();
-  }, [id]);
+    fetchBids();
+  }, [isOwningClient, id, task]);
+
+  const handleBidSubmit = async (e) => {
+    e.preventDefault();
+    setBidError('');
+
+    try {
+      await createBid(id, { proposedAmount, message });
+      setBidSuccess(true);
+      setProposedAmount('');
+      setMessage('');
+    } catch (err) {
+      setBidError(err.response?.data?.message || 'Something went wrong');
+    }
+  };
+
+  const handleAccept = async (bidId) => {
+    try {
+      await acceptBid(bidId);
+      await fetchTask();
+      const response = await getBidsForTask(id);
+      setBids(response.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Something went wrong');
+    }
+  };
 
   if (loading) {
     return (
@@ -84,7 +151,122 @@ function TaskDetail() {
 
         <hr className="border-slate-700 mb-6" />
 
-        {/* Bids section coming next */}
+        {/* Bidding section (freelancer side) */}
+        {!isOwningClient && (
+          <>
+            {bidSuccess ? (
+              <p className="bg-green-500/10 text-green-400 text-sm p-3 rounded">
+                Your bid was submitted successfully!
+              </p>
+            ) : !user ? (
+              <p className="text-slate-400 text-sm">
+                Log in as a freelancer to bid on this task.
+              </p>
+            ) : user.role !== 'freelancer' ? (
+              <p className="text-slate-400 text-sm">
+                Only freelancers can bid on tasks.
+              </p>
+            ) : task.status !== 'open' ? (
+              <p className="text-slate-400 text-sm">
+                This task is no longer accepting bids.
+              </p>
+            ) : (
+              <form onSubmit={handleBidSubmit}>
+                <h3 className="text-white font-semibold mb-3">Submit a Bid</h3>
+
+                {bidError && (
+                  <p className="bg-red-500/10 text-red-400 text-sm p-2 rounded mb-3">
+                    {bidError}
+                  </p>
+                )}
+
+                <div className="mb-3">
+                  <label className="block text-slate-300 text-sm mb-1">
+                    Proposed Amount ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={proposedAmount}
+                    onChange={(e) => setProposedAmount(e.target.value)}
+                    required
+                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-slate-300 text-sm mb-1">
+                    Message
+                  </label>
+                  <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    required
+                    rows={4}
+                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+                >
+                  Submit Bid
+                </button>
+              </form>
+            )}
+          </>
+        )}
+
+        {/* Bids section (owning client side) */}
+        {isOwningClient && (
+          <div>
+            <h3 className="text-white font-semibold mb-3">Bids</h3>
+
+            {bidsLoading ? (
+              <p className="text-slate-400 text-sm">Loading bids...</p>
+            ) : bids.length === 0 ? (
+              <p className="text-slate-400 text-sm">No bids yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {bids.map((bid) => (
+                  <div
+                    key={bid._id}
+                    className="bg-slate-700 rounded-lg p-4 flex items-start justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white font-medium">
+                          {bid.freelancer?.name || 'Unknown'}
+                        </p>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            bidStatusColors[bid.status] ||
+                            'bg-slate-500/20 text-slate-400'
+                          }`}
+                        >
+                          {bid.status}
+                        </span>
+                      </div>
+                      <p className="text-green-400 text-sm mb-1">
+                        ${bid.proposedAmount}
+                      </p>
+                      <p className="text-slate-300 text-sm">{bid.message}</p>
+                    </div>
+
+                    {bid.status === 'pending' && task.status === 'open' && (
+                      <button
+                        onClick={() => handleAccept(bid._id)}
+                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded transition whitespace-nowrap"
+                      >
+                        Accept
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
