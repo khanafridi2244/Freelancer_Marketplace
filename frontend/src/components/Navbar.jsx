@@ -19,6 +19,11 @@ function Navbar() {
       <div className="flex items-center gap-4">
         {user ? (
           <>
+            {user.role === 'client' && (
+              <Link to="/post-task" className="text-slate-300 hover:text-white text-sm">
+               Post Task
+              </Link>
+            )}
             <span className="text-slate-300 text-sm">
               Hi, {user.name} ({user.role})
             </span>

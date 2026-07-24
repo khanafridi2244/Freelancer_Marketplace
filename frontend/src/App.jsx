@@ -4,6 +4,7 @@ import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import TaskList from './pages/TaskList.jsx';
 import TaskDetail from './pages/TaskDetail.jsx';
+import PostTask from './pages/PostTask.jsx';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/tasks/:id" element={<TaskDetail />} />
+        <Route path="/post-task" element={<PostTask />} />
       </Routes>
     </BrowserRouter>
   );
