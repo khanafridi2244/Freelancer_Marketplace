@@ -108,4 +108,17 @@ const acceptBid = async (req, res) => {
   }
 };
 
-export { createBid, getBidsForTask, acceptBid };
+const getMyBids = async (req, res) => {
+  try {
+    const bids = await Bid.find({ freelancer: req.user._id }).populate(
+      'task',
+      'title status budget'
+    );
+
+    return res.status(200).json(bids);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export { createBid, getBidsForTask, acceptBid, getMyBids };
