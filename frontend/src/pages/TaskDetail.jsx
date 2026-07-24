@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getTaskById } from '../api/tasks.js';
+import { getTaskById, completeTask } from '../api/tasks.js';
 import { createBid, getBidsForTask, acceptBid } from '../api/bids.js';
+import { createReview } from '../api/reviews.js';
 import { useAuth } from '../context/useAuth.js';
 
 const statusColors = {
@@ -32,6 +33,11 @@ function TaskDetail() {
   const [bids, setBids] = useState([]);
   const [bidsLoading, setBidsLoading] = useState(true);
 
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [reviewError, setReviewError] = useState('');
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
   const fetchTask = useCallback(async () => {
     try {
       const response = await getTaskById(id);
@@ -43,6 +49,7 @@ function TaskDetail() {
     }
   }, [id]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     fetchTask();
   }, [fetchTask]);
@@ -50,6 +57,12 @@ function TaskDetail() {
   const isOwningClient =
     user && task && user.role === 'client' && task.client?._id === user.id;
 
+  const isAssignedFreelancer =
+    user && task && user.role === 'freelancer' && task.assignedFreelancer === user.id;
+
+  const isPartOfTask = isOwningClient || isAssignedFreelancer;
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isOwningClient) {
       setBidsLoading(false);
@@ -93,6 +106,28 @@ function TaskDetail() {
       setBids(response.data);
     } catch (err) {
       alert(err.response?.data?.message || 'Something went wrong');
+    }
+  };
+
+  const handleComplete = async () => {
+    try {
+      await completeTask(id);
+      await fetchTask();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Something went wrong');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setReviewError('');
+
+    try {
+      await createReview(id, { rating: Number(rating), comment });
+      setReviewSuccess(true);
+      setComment('');
+    } catch (err) {
+      setReviewError(err.response?.data?.message || 'Something went wrong');
     }
   };
 
@@ -264,6 +299,76 @@ function TaskDetail() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Mark complete (owning client, in-progress task) */}
+        {isOwningClient && task.status === 'in-progress' && (
+          <div className="mt-6">
+            <button
+              onClick={handleComplete}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+            >
+              Mark Task as Completed
+            </button>
+          </div>
+        )}
+
+        {/* Review form (completed task, either party) */}
+        {isPartOfTask && task.status === 'completed' && (
+          <div className="mt-6 pt-6 border-t border-slate-700">
+            <h3 className="text-white font-semibold mb-3">Leave a Review</h3>
+
+            {reviewSuccess ? (
+              <p className="bg-green-500/10 text-green-400 text-sm p-3 rounded">
+                Review submitted, thank you!
+              </p>
+            ) : (
+              <form onSubmit={handleReviewSubmit}>
+                {reviewError && (
+                  <p className="bg-red-500/10 text-red-400 text-sm p-2 rounded mb-3">
+                    {reviewError}
+                  </p>
+                )}
+
+                <div className="mb-3">
+                  <label className="block text-slate-300 text-sm mb-1">
+                    Rating
+                  </label>
+                  <select
+                    value={rating}
+                    onChange={(e) => setRating(e.target.value)}
+                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {[5, 4, 3, 2, 1].map((n) => (
+                      <option key={n} value={n}>
+                        {n} star{n > 1 ? 's' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-slate-300 text-sm mb-1">
+                    Comment
+                  </label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    required
+                    rows={3}
+                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+                >
+                  Submit Review
+                </button>
+              </form>
             )}
           </div>
         )}
