@@ -11,40 +11,49 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-slate-800 px-6 py-4 flex items-center justify-between">
-      <Link to="/" className="text-white text-xl font-bold">
-        Freelance Marketplace
+    <nav className="bg-slate border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <Link to="/" className="font-display text-xl font-semibold text-paper tracking-tight">
+        Freelance<span className="text-signal">Marketplace</span>
       </Link>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5">
         {user ? (
           <>
             {user.role === 'client' && (
-              <Link to="/post-task" className="text-slate-300 hover:text-white text-sm">
-               Post Task
+              <Link
+                to="/post-task"
+                className="text-fog hover:text-paper text-sm transition-colors"
+              >
+                Post Task
               </Link>
             )}
-            <span className="text-slate-300 text-sm">
-              Hi, {user.name} ({user.role})
-            </span>
-            <Link to="/dashboard" className="text-slate-300 hover:text-white text-sm">
+            <Link
+              to={`/profile/${user.id}`}
+              className="text-fog hover:text-paper text-sm transition-colors"
+            >
+              {user.name} <span className="text-signal">· {user.role}</span>
+            </Link>
+            <Link
+              to="/dashboard"
+              className="text-fog hover:text-paper text-sm transition-colors"
+            >
               Dashboard
             </Link>
             <button
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded transition"
+              className="border border-border text-fog hover:text-paper hover:border-signal text-sm px-3 py-1.5 rounded-md transition-colors"
             >
               Logout
             </button>
           </>
         ) : (
           <>
-            <Link to="/login" className="text-slate-300 hover:text-white text-sm">
+            <Link to="/login" className="text-fog hover:text-paper text-sm transition-colors">
               Login
             </Link>
             <Link
               to="/register"
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded transition"
+              className="bg-signal hover:bg-signal-dark text-ink text-sm font-medium px-3 py-1.5 rounded-md transition-colors"
             >
               Register
             </Link>

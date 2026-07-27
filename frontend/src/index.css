@@ -1,1 +1,43 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+@theme {
+  --color-ink: #10141c;
+  --color-slate: #1a2030;
+  --color-slate-2: #232b3d;
+  --color-border: #2a3245;
+  --color-fog: #8891a4;
+  --color-paper: #edeff4;
+
+  --color-signal: #d4a054;
+  --color-signal-dark: #b8863e;
+
+  --color-status-open: #3ecf8e;
+  --color-status-progress: #f0b429;
+  --color-status-completed: #7c8db5;
+  --color-status-rejected: #f2545b;
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+body {
+  background-color: var(--color-ink);
+  font-family: var(--font-body);
+  color: var(--color-paper);
+}
+
+/* Signature: bracketed ledger tag for money amounts */
+.ledger-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ledger-amount::before {
+  content: "[ ";
+  opacity: 0.5;
+}
+.ledger-amount::after {
+  content: " ]";
+  opacity: 0.5;
+}
