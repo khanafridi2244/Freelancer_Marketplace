@@ -6,6 +6,7 @@ import TaskList from './pages/TaskList.jsx';
 import TaskDetail from './pages/TaskDetail.jsx';
 import PostTask from './pages/PostTask.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Profile from './pages/Profile.jsx';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/tasks/:id" element={<TaskDetail />} />
         <Route path="/post-task" element={<PostTask />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        
+        <Route path="/profile/:id" element={<Profile />} />
       </Routes>
     </BrowserRouter>
   );

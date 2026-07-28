@@ -5,17 +5,17 @@ import { createBid, getBidsForTask, acceptBid } from '../api/bids.js';
 import { createReview } from '../api/reviews.js';
 import { useAuth } from '../context/useAuth.js';
 
-const statusColors = {
-  open: 'bg-green-500/20 text-green-400',
-  'in-progress': 'bg-yellow-500/20 text-yellow-400',
-  completed: 'bg-gray-500/20 text-gray-400',
-  cancelled: 'bg-red-500/20 text-red-400',
+const statusText = {
+  open: 'text-status-open',
+  'in-progress': 'text-status-progress',
+  completed: 'text-status-completed',
+  cancelled: 'text-status-rejected',
 };
 
-const bidStatusColors = {
-  pending: 'bg-yellow-500/20 text-yellow-400',
-  accepted: 'bg-green-500/20 text-green-400',
-  rejected: 'bg-red-500/20 text-red-400',
+const bidStatusText = {
+  pending: 'text-status-progress',
+  accepted: 'text-status-open',
+  rejected: 'text-status-rejected',
 };
 
 function TaskDetail() {
@@ -133,90 +133,90 @@ function TaskDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <p className="text-slate-400">Loading task...</p>
+      <div className="min-h-[calc(100vh-73px)] flex items-center justify-center">
+        <p className="text-fog font-mono text-sm">Loading task…</p>
       </div>
     );
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <p className="text-slate-400">Task not found.</p>
+      <div className="min-h-[calc(100vh-73px)] flex items-center justify-center">
+        <p className="text-fog">Task not found.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 px-6 py-8">
-      <div className="max-w-2xl mx-auto bg-slate-800 rounded-lg p-6">
+    <div className="min-h-[calc(100vh-73px)] px-6 py-10">
+      <div className="max-w-2xl mx-auto bg-slate border border-border rounded-md p-8">
         <div className="flex items-start justify-between mb-4">
-          <h1 className="text-2xl font-bold text-white">{task.title}</h1>
+          <h1 className="font-display text-2xl font-semibold text-paper">
+            {task.title}
+          </h1>
           <span
-            className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
-              statusColors[task.status] || 'bg-slate-500/20 text-slate-400'
+            className={`text-[11px] font-mono uppercase tracking-wide whitespace-nowrap ml-3 ${
+              statusText[task.status] || 'text-fog'
             }`}
           >
             {task.status}
           </span>
         </div>
 
-        <p className="text-slate-300 mb-6">{task.description}</p>
+        <p className="text-paper/80 mb-6 leading-relaxed">{task.description}</p>
 
-        <div className="grid grid-cols-2 gap-4 text-sm mb-6">
+        <div className="grid grid-cols-2 gap-4 text-sm mb-6 border-y border-border py-4">
           <div>
-            <p className="text-slate-500">Budget</p>
-            <p className="text-green-400 font-medium">${task.budget}</p>
+            <p className="text-fog text-xs uppercase tracking-wide mb-1">Budget</p>
+            <p className="ledger-amount text-signal">${task.budget}</p>
           </div>
           <div>
-            <p className="text-slate-500">Category</p>
-            <p className="text-slate-200">{task.category}</p>
+            <p className="text-fog text-xs uppercase tracking-wide mb-1">Category</p>
+            <p className="text-paper">{task.category}</p>
           </div>
           <div>
-            <p className="text-slate-500">Deadline</p>
-            <p className="text-slate-200">
+            <p className="text-fog text-xs uppercase tracking-wide mb-1">Deadline</p>
+            <p className="text-paper font-mono text-sm">
               {new Date(task.deadline).toLocaleDateString()}
             </p>
           </div>
           <div>
-            <p className="text-slate-500">Posted by</p>
-            <p className="text-slate-200">{task.client?.name || 'Unknown'}</p>
+            <p className="text-fog text-xs uppercase tracking-wide mb-1">Posted by</p>
+            <p className="text-paper">{task.client?.name || 'Unknown'}</p>
           </div>
         </div>
-
-        <hr className="border-slate-700 mb-6" />
 
         {/* Bidding section (freelancer side) */}
         {!isOwningClient && (
           <>
             {bidSuccess ? (
-              <p className="bg-green-500/10 text-green-400 text-sm p-3 rounded">
+              <p className="bg-status-open/10 text-status-open text-sm p-3 rounded-md">
                 Your bid was submitted successfully!
               </p>
             ) : !user ? (
-              <p className="text-slate-400 text-sm">
+              <p className="text-fog text-sm">
                 Log in as a freelancer to bid on this task.
               </p>
             ) : user.role !== 'freelancer' ? (
-              <p className="text-slate-400 text-sm">
-                Only freelancers can bid on tasks.
-              </p>
+              <p className="text-fog text-sm">Only freelancers can bid on tasks.</p>
             ) : task.status !== 'open' ? (
-              <p className="text-slate-400 text-sm">
+              <p className="text-fog text-sm">
                 This task is no longer accepting bids.
               </p>
             ) : (
               <form onSubmit={handleBidSubmit}>
-                <h3 className="text-white font-semibold mb-3">Submit a Bid</h3>
+                <h3 className="font-display text-lg font-semibold text-paper mb-3">
+                  Submit a Bid
+                </h3>
 
                 {bidError && (
-                  <p className="bg-red-500/10 text-red-400 text-sm p-2 rounded mb-3">
+                  <p className="bg-status-rejected/10 text-status-rejected text-sm p-2 rounded-md mb-3">
                     {bidError}
                   </p>
                 )}
 
                 <div className="mb-3">
-                  <label className="block text-slate-300 text-sm mb-1">
+                  <label className="block text-fog text-sm mb-1">
                     Proposed Amount ($)
                   </label>
                   <input
@@ -224,26 +224,24 @@ function TaskDetail() {
                     value={proposedAmount}
                     onChange={(e) => setProposedAmount(e.target.value)}
                     required
-                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors font-mono"
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-slate-300 text-sm mb-1">
-                    Message
-                  </label>
+                  <label className="block text-fog text-sm mb-1">Message</label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     required
                     rows={4}
-                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+                  className="bg-signal hover:bg-signal-dark text-ink px-4 py-2 rounded-md font-medium transition-colors"
                 >
                   Submit Bid
                 </button>
@@ -255,43 +253,44 @@ function TaskDetail() {
         {/* Bids section (owning client side) */}
         {isOwningClient && (
           <div>
-            <h3 className="text-white font-semibold mb-3">Bids</h3>
+            <h3 className="font-display text-lg font-semibold text-paper mb-3">
+              Bids
+            </h3>
 
             {bidsLoading ? (
-              <p className="text-slate-400 text-sm">Loading bids...</p>
+              <p className="text-fog text-sm font-mono">Loading bids…</p>
             ) : bids.length === 0 ? (
-              <p className="text-slate-400 text-sm">No bids yet.</p>
+              <p className="text-fog text-sm">No bids yet.</p>
             ) : (
               <div className="space-y-3">
                 {bids.map((bid) => (
                   <div
                     key={bid._id}
-                    className="bg-slate-700 rounded-lg p-4 flex items-start justify-between gap-4"
+                    className="bg-slate-2 border border-border rounded-md p-4 flex items-start justify-between gap-4"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-white font-medium">
+                        <p className="text-paper font-medium">
                           {bid.freelancer?.name || 'Unknown'}
                         </p>
                         <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            bidStatusColors[bid.status] ||
-                            'bg-slate-500/20 text-slate-400'
+                          className={`text-[11px] font-mono uppercase tracking-wide ${
+                            bidStatusText[bid.status] || 'text-fog'
                           }`}
                         >
                           {bid.status}
                         </span>
                       </div>
-                      <p className="text-green-400 text-sm mb-1">
+                      <p className="ledger-amount text-signal text-sm mb-1">
                         ${bid.proposedAmount}
                       </p>
-                      <p className="text-slate-300 text-sm">{bid.message}</p>
+                      <p className="text-paper/70 text-sm">{bid.message}</p>
                     </div>
 
                     {bid.status === 'pending' && task.status === 'open' && (
                       <button
                         onClick={() => handleAccept(bid._id)}
-                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded transition whitespace-nowrap"
+                        className="bg-status-open/20 hover:bg-status-open/30 text-status-open text-sm px-3 py-1.5 rounded-md transition-colors whitespace-nowrap"
                       >
                         Accept
                       </button>
@@ -303,43 +302,43 @@ function TaskDetail() {
           </div>
         )}
 
-        {/* Mark complete (owning client, in-progress task) */}
+        {/* Mark complete */}
         {isOwningClient && task.status === 'in-progress' && (
           <div className="mt-6">
             <button
               onClick={handleComplete}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+              className="bg-signal hover:bg-signal-dark text-ink px-4 py-2 rounded-md font-medium transition-colors"
             >
               Mark Task as Completed
             </button>
           </div>
         )}
 
-        {/* Review form (completed task, either party) */}
+        {/* Review form */}
         {isPartOfTask && task.status === 'completed' && (
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <h3 className="text-white font-semibold mb-3">Leave a Review</h3>
+          <div className="mt-6 pt-6 border-t border-border">
+            <h3 className="font-display text-lg font-semibold text-paper mb-3">
+              Leave a Review
+            </h3>
 
             {reviewSuccess ? (
-              <p className="bg-green-500/10 text-green-400 text-sm p-3 rounded">
+              <p className="bg-status-open/10 text-status-open text-sm p-3 rounded-md">
                 Review submitted, thank you!
               </p>
             ) : (
               <form onSubmit={handleReviewSubmit}>
                 {reviewError && (
-                  <p className="bg-red-500/10 text-red-400 text-sm p-2 rounded mb-3">
+                  <p className="bg-status-rejected/10 text-status-rejected text-sm p-2 rounded-md mb-3">
                     {reviewError}
                   </p>
                 )}
 
                 <div className="mb-3">
-                  <label className="block text-slate-300 text-sm mb-1">
-                    Rating
-                  </label>
+                  <label className="block text-fog text-sm mb-1">Rating</label>
                   <select
                     value={rating}
                     onChange={(e) => setRating(e.target.value)}
-                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
                   >
                     {[5, 4, 3, 2, 1].map((n) => (
                       <option key={n} value={n}>
@@ -350,21 +349,19 @@ function TaskDetail() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-slate-300 text-sm mb-1">
-                    Comment
-                  </label>
+                  <label className="block text-fog text-sm mb-1">Comment</label>
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     required
                     rows={3}
-                    className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition"
+                  className="bg-signal hover:bg-signal-dark text-ink px-4 py-2 rounded-md font-medium transition-colors"
                 >
                   Submit Review
                 </button>

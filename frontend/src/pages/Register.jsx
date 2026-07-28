@@ -23,58 +23,63 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-[calc(100vh-73px)] flex items-center justify-center px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-slate-800 p-8 rounded-lg shadow-lg w-full max-w-md"
+        className="bg-slate border border-border rounded-md p-8 w-full max-w-md"
       >
-        <h1 className="text-2xl font-bold text-white mb-6">Create an account</h1>
+        <p className="font-mono text-xs text-signal uppercase tracking-widest mb-1">
+          Get started
+        </p>
+        <h1 className="font-display text-2xl font-semibold text-paper mb-6">
+          Create an account
+        </h1>
 
         {error && (
-          <p className="bg-red-500/10 text-red-400 text-sm p-2 rounded mb-4">
+          <p className="bg-status-rejected/10 text-status-rejected text-sm p-2 rounded-md mb-4">
             {error}
           </p>
         )}
 
         <div className="mb-4">
-          <label className="block text-slate-300 text-sm mb-1">Name</label>
+          <label className="block text-fog text-sm mb-1">Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-slate-300 text-sm mb-1">Email</label>
+          <label className="block text-fog text-sm mb-1">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-slate-300 text-sm mb-1">Password</label>
+          <label className="block text-fog text-sm mb-1">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
           />
         </div>
 
         <div className="mb-6">
-          <label className="block text-slate-300 text-sm mb-1">I am a</label>
+          <label className="block text-fog text-sm mb-1">I am a</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="w-full p-2 rounded bg-slate-700 text-white outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 rounded-md bg-slate-2 border border-border text-paper outline-none focus:border-signal transition-colors"
           >
             <option value="client">Client</option>
             <option value="freelancer">Freelancer</option>
@@ -83,14 +88,14 @@ function Register() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium transition"
+          className="w-full bg-signal hover:bg-signal-dark text-ink py-2 rounded-md font-medium transition-colors"
         >
           Register
         </button>
 
-        <p className="text-slate-400 text-sm text-center mt-4">
+        <p className="text-fog text-sm text-center mt-4">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-400 hover:underline">
+          <Link to="/login" className="text-signal hover:underline">
             Login
           </Link>
         </p>
